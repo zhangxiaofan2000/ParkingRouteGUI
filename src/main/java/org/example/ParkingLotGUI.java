@@ -65,23 +65,34 @@ public class ParkingLotGUI extends JFrame {
         // 遍历 parkingLotArray 数组，创建标签并添加到面板上
         for (char[] chars : parkingLotArray) {
             for (char type : chars) {
-                JLabel label = new JLabel();
-                label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
-                label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
                 switch (type) {
                     case 'R':
-                        label.setBackground(Color.GRAY); // 道路用灰色
+                        JLabel label = new JLabel();
+                        label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
+                        label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                        label.setBackground(Color.WHITE); // 道路用WHITE
+                        parkingLotPanel.add(label);
+
                         break;
                     case 'C':
+                        ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/car_red.png")));
+                        label = new JLabel(icon);
+                        label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
+                        label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
                         label.setBackground(Color.RED); // 汽车用红色
+                        parkingLotPanel.add(label);
+
                         break;
                     case 'E':
+                        icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/car_green.png")));
+                        label = new JLabel(icon);
+                        label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
+                        label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
                         label.setBackground(Color.GREEN); // 空车位用绿色
+                        parkingLotPanel.add(label);
+
                         break;
                 }
-                label.setOpaque(true);
-
-                parkingLotPanel.add(label);
             }
         }
 
