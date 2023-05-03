@@ -4,103 +4,124 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.util.logging.Logger;
 
 public class ParkingLotGUI extends JFrame {
-    private final int NUM_ROWS = 5;
-    private final int NUM_COLS = 5;
-    private final int SPACE_WIDTH = 100;
-    private final int SPACE_HEIGHT = 100;
-    private final int PARKING_LOT_WIDTH = NUM_COLS * SPACE_WIDTH;
-    private final int PARKING_LOT_HEIGHT = NUM_ROWS * SPACE_HEIGHT;
-    private JPanel parkingLotPanel;
-    private JLabel[][] spaceLabels;
-    private JButton findPathButton;
-    private JTextField spaceNumberField;
-    private ArrayList<Point> path;
+    private static final Logger logger = Logger.getLogger(ParkingLotGUI.class.getName());
+
+    private static final int SPACE_WIDTH = 24; // 停车位宽度
+    private static final int SPACE_HEIGHT = 53; // 停车位高度
+    private static final int PARKING_ROWS = 5; // 停车场行数
+    private static final int PARKING_COLS = 8; // 停车场列数
+    // 定义道路的宽度和高度
+    final int ROAD_WIDTH = 20;
+    final int ROAD_HEIGHT = 20;
+
+    private JPanel parkingLotPanel; // 停车场图像面板
+    private JLabel[][] spaceLabels; // 停车位标签
+    private JPanel buttonPanel; // 按钮面板
+    private JLabel spaceNumberLabel; // 车位号标签
+    private JTextField spaceNumberField; // 车位号输入框
+    private JButton findPathButton; // 查找路径按钮
 
     public ParkingLotGUI() {
         super("Parking Lot");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createComponents();
-        setSize(PARKING_LOT_WIDTH, PARKING_LOT_HEIGHT + 80);
+        setSize(800, 600);
         setVisible(true);
     }
 
     private void createComponents() {
-        // Create parking lot panel
+
+        // 设置停车场数组
+        char[][] parkingLotArray = {
+                { 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' },
+
+                { 'R', 'C', 'C', 'C', 'C', 'R', 'C', 'C', 'C', 'R' },
+                { 'R', 'C', 'C', 'C', 'C', 'R', 'C', 'C', 'C', 'R' },
+
+                { 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' },
+
+                { 'R', 'E', 'E', 'E', 'E', 'R', 'E', 'E', 'E', 'R' },
+                { 'R', 'E', 'E', 'E', 'C', 'R', 'E', 'E', 'E', 'R' },
+
+                { 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' },
+
+                { 'R', 'E', 'E', 'E', 'E', 'R', 'E', 'E', 'E', 'R' },
+                { 'R', 'E', 'E', 'E', 'E', 'R', 'E', 'E', 'E', 'R' },
+                { 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R' }
+        };
+
+        // 创建停车场图像面板
         parkingLotPanel = new JPanel();
-        parkingLotPanel.setLayout(new GridLayout(NUM_ROWS, NUM_COLS));
-        parkingLotPanel.setPreferredSize(new Dimension(PARKING_LOT_WIDTH, PARKING_LOT_HEIGHT));
-        spaceLabels = new JLabel[NUM_ROWS][NUM_COLS];
-        for (int row = 0; row < NUM_ROWS; row++) {
-            for (int col = 0; col < NUM_COLS; col++) {
-                JLabel spaceLabel = new JLabel();
-                spaceLabel.setOpaque(true);
-                spaceLabel.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
-                spaceLabel.setBackground(Color.GREEN);
-                spaceLabels[row][col] = spaceLabel;
-                parkingLotPanel.add(spaceLabel);
+        parkingLotPanel.setLayout(new GridLayout(parkingLotArray.length, parkingLotArray[0].length));
+        spaceLabels = new JLabel[parkingLotArray.length][parkingLotArray[0].length];
+
+
+        // 遍历 parkingLotArray 数组，创建标签并添加到面板上
+        for (char[] chars : parkingLotArray) {
+            for (char type : chars) {
+                JLabel label = new JLabel();
+                label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
+                label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                switch (type) {
+                    case 'R':
+                        label.setBackground(Color.GRAY); // 道路用灰色
+                        break;
+                    case 'C':
+                        label.setBackground(Color.RED); // 汽车用红色
+                        break;
+                    case 'E':
+                        label.setBackground(Color.GREEN); // 空车位用绿色
+                        break;
+                }
+                label.setOpaque(true);
+
+                parkingLotPanel.add(label);
             }
         }
-        add(parkingLotPanel, BorderLayout.NORTH);
 
-        // Create find path button and space number field
-        findPathButton = new JButton("Find Path");
+
+        // 创建按钮面板
+        buttonPanel = new JPanel();
+        spaceNumberLabel = new JLabel("车位:");
         spaceNumberField = new JTextField(10);
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(new JLabel("Enter Space Number:"));
-        buttonPanel.add(spaceNumberField);
-        buttonPanel.add(findPathButton);
-        add(buttonPanel, BorderLayout.CENTER);
+        findPathButton = new JButton("查找");
 
-        // Add action listener to find path button
+
+        // 添加查找路径按钮的动作监听器
         findPathButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String spaceNumber = spaceNumberField.getText();
-                Point spaceLocation = findSpaceLocation(spaceNumber);
-                if (spaceLocation != null) {
-                    path = findPath(spaceLocation);
-                    showPath();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid space number.");
-                }
+                // 获取用户输入的车位号
+                String spaceNumber = spaceNumberField.getText().trim();
+                // TODO: 查找路径并显示
+                // 例如：
+                int row = 2;
+                int col = 3;
+                JLabel spaceLabel = spaceLabels[row][col];
+                spaceLabel.setBackground(Color.RED);
             }
         });
+
+        // 将组件添加到主面板
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(parkingLotPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        buttonPanel.add(spaceNumberLabel);
+        buttonPanel.add(spaceNumberField);
+        buttonPanel.add(findPathButton);
+        setContentPane(mainPanel);
+
+
     }
 
-    private Point findSpaceLocation(String spaceNumber) {
-        for (int row = 0; row < NUM_ROWS; row++) {
-            for (int col = 0; col < NUM_COLS; col++) {
-                if (spaceLabels[row][col].getText().equals(spaceNumber)) {
-                    return new Point(col, row);
-                }
-            }
-        }
-        return null;
-    }
-
-    private ArrayList<Point> findPath(Point spaceLocation) {
-        ArrayList<Point> path = new ArrayList<>();
-        // TODO: Implement pathfinding algorithm
-        return path;
-    }
-
-    private void showPath() {
-        Graphics2D g2 = (Graphics2D) parkingLotPanel.getGraphics();
-        g2.setColor(Color.RED);
-        Point prev = path.get(0);
-        for (int i = 1; i < path.size(); i++) {
-            Point curr = path.get(i);
-            int startX = prev.x * SPACE_WIDTH + SPACE_WIDTH / 2;
-            int startY = prev.y * SPACE_HEIGHT + SPACE_HEIGHT / 2;
-            int endX = curr.x * SPACE_WIDTH + SPACE_WIDTH / 2;
-            int endY = curr.y * SPACE_HEIGHT + SPACE_HEIGHT / 2;
-            g2.drawLine(startX, startY, endX, endY);
-            prev = curr;
-        }
-    }
 
     public static void main(String[] args) {
         new ParkingLotGUI();
     }
+
 }
