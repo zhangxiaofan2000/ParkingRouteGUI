@@ -23,7 +23,10 @@ public class ParkingLotGUI extends JFrame {
     private static int SPACE_WIDTH=50; // 停车位宽度
     private static int SPACE_HEIGHT=50; // 停车位高度
     private char[][] parkingLotArray;
+
     private JPanel parkingLotPanel; // 停车场图像面板
+    private JLabel infoLabel; // 停车场信息
+
     private JLabel[][] spaceLabels; // 停车位标签
     private JPanel buttonPanel; // 按钮面板
     private JLabel spaceNumberLabel; // 车位号标签
@@ -95,7 +98,17 @@ public class ParkingLotGUI extends JFrame {
         JPanel mapPanel = new JPanel(new BorderLayout());
         mapPanel.add(mapComboBox, BorderLayout.CENTER);
         selectPanel.add(mapPanel);
-        mainPanel.add(selectPanel, BorderLayout.NORTH);
+
+        infoLabel = new JLabel("点击车位查看信息", JLabel.CENTER);
+        // 设置JFrame的布局为BorderLayout
+        setLayout(new BorderLayout());
+
+
+        Box box = Box.createHorizontalBox();
+        box.add(selectPanel);
+        box.add(Box.createHorizontalStrut(10)); // 加一个水平间距
+        box.add(infoLabel);
+        mainPanel.add(box, BorderLayout.NORTH);
 
 
         // 创建按钮面板
@@ -168,22 +181,24 @@ public class ParkingLotGUI extends JFrame {
         parkingLotPanel.setLayout(new GridLayout(parkingLotArray.length, parkingLotArray[0].length));
         spaceLabels = new JLabel[parkingLotArray.length][parkingLotArray[0].length];
         //动态调整图片大小
-        SPACE_WIDTH = SPACE_WIDTH/(parkingLotArray.length/10);
-        SPACE_HEIGHT = SPACE_HEIGHT/(parkingLotArray.length/10);
+        int space_wigth = Math.max(1, SPACE_WIDTH / (parkingLotArray.length / 10));
+        int space_heigth = Math.max(1, SPACE_HEIGHT/(parkingLotArray.length/10));
+
         // 遍历 parkingLotArray 数组，创建标签并添加到面板上
-        for (char[] chars : parkingLotArray) {
-            for (char type : chars) {
+        for (int i = 0; i < parkingLotArray.length; i++) {
+            for (int j = 0; j < parkingLotArray[i].length; j++) {
+                char type = parkingLotArray[i][j];
                 switch (type) {
                     case 'R':
-                        JLabel label = createLabel("/road.png", Color.WHITE);
+                        JLabel label = createLabel("/road.png", Color.WHITE,i,j,space_wigth,space_heigth);
                         parkingLotPanel.add(label);
                         break;
                     case 'C':
-                        label = createLabel("/car_red.png", Color.WHITE);
+                        label = createLabel("/car_red.png", Color.WHITE,i,j,space_wigth,space_heigth);
                         parkingLotPanel.add(label);
                         break;
                     case 'E':
-                        label = createLabel("/car_green.png", Color.WHITE);
+                        label = createLabel("/car_green.png", Color.WHITE,i,j,space_wigth,space_heigth);
                         parkingLotPanel.add(label);
                         break;
                     case 'P':
@@ -209,17 +224,27 @@ public class ParkingLotGUI extends JFrame {
     }
 
 
-    private JLabel createLabel(String imagePath, Color backgroundColor) {
+    private JLabel createLabel(String imagePath, Color backgroundColor,int i, int j,int space_wigth,int space_heigth) {
 
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(imagePath)));
-        Image img = icon.getImage().getScaledInstance(SPACE_WIDTH, SPACE_HEIGHT, Image.SCALE_SMOOTH);
+        Image img = icon.getImage().getScaledInstance(space_wigth, space_heigth, Image.SCALE_SMOOTH);
         ImageIcon newIcon = new ImageIcon(img);
         JLabel label = new JLabel(newIcon);
 
-        label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
+        label.setPreferredSize(new Dimension(space_wigth, space_heigth));
         label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         label.setBackground(backgroundColor);
         label.setOpaque(true);
+        // 设置其他JLabel的鼠标监听器
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 当鼠标点击JLabel时，将其文本设置为信息显示区域JLabel的文本
+                infoLabel.setText("车位号："+String.valueOf(i)+"-"+ j+"    ");
+            }
+        };
+
+        label.addMouseListener(mouseAdapter);
 
         return label;
     }
