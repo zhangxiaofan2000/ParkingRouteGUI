@@ -20,8 +20,8 @@ import java.util.logging.Logger;
 public class ParkingLotGUI extends JFrame {
     private static final Logger logger = Logger.getLogger(ParkingLotGUI.class.getName());
 
-    private static final int SPACE_WIDTH=50; // 停车位宽度
-    private static final int SPACE_HEIGHT=50; // 停车位高度
+    private static int SPACE_WIDTH=50; // 停车位宽度
+    private static int SPACE_HEIGHT=50; // 停车位高度
     private char[][] parkingLotArray;
     private JPanel parkingLotPanel; // 停车场图像面板
     private JLabel[][] spaceLabels; // 停车位标签
@@ -34,7 +34,7 @@ public class ParkingLotGUI extends JFrame {
         super("Parking Lot");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createComponents();
-        setSize(800, 600);
+        setSize(800, 800);
         setVisible(true);
     }
 
@@ -167,7 +167,9 @@ public class ParkingLotGUI extends JFrame {
         // 创建停车场图像面板
         parkingLotPanel.setLayout(new GridLayout(parkingLotArray.length, parkingLotArray[0].length));
         spaceLabels = new JLabel[parkingLotArray.length][parkingLotArray[0].length];
-
+        //动态调整图片大小
+        SPACE_WIDTH = SPACE_WIDTH/(parkingLotArray.length/10);
+        SPACE_HEIGHT = SPACE_HEIGHT/(parkingLotArray.length/10);
         // 遍历 parkingLotArray 数组，创建标签并添加到面板上
         for (char[] chars : parkingLotArray) {
             for (char type : chars) {
@@ -213,6 +215,7 @@ public class ParkingLotGUI extends JFrame {
         Image img = icon.getImage().getScaledInstance(SPACE_WIDTH, SPACE_HEIGHT, Image.SCALE_SMOOTH);
         ImageIcon newIcon = new ImageIcon(img);
         JLabel label = new JLabel(newIcon);
+
         label.setPreferredSize(new Dimension(SPACE_WIDTH, SPACE_HEIGHT));
         label.setBorder(BorderFactory.createLineBorder(Color.WHITE));
         label.setBackground(backgroundColor);
