@@ -17,14 +17,11 @@ import java.util.logging.Logger;
 public class ParkingLotGUI extends JFrame {
     private static final Logger logger = Logger.getLogger(ParkingLotGUI.class.getName());
 
-    private static final int SPACE_WIDTH = 50; // 停车位宽度
-    private static final int SPACE_HEIGHT = 50; // 停车位高度
-    private static final int PARKING_ROWS = 5; // 停车场行数
-    private static final int PARKING_COLS = 8; // 停车场列数
-    // 定义道路的宽度和高度
-    final int ROAD_WIDTH = 20;
-    final int ROAD_HEIGHT = 20;
+    private static final int SPACE_WIDTH=50; // 停车位宽度
+    private static final int SPACE_HEIGHT=50; // 停车位高度
 
+
+    private char[][] parkingLotArray;
     private JPanel parkingLotPanel; // 停车场图像面板
     private JLabel[][] spaceLabels; // 停车位标签
     private JPanel buttonPanel; // 按钮面板
@@ -75,7 +72,7 @@ public class ParkingLotGUI extends JFrame {
                     String selectedMap = (String) e.getItem();
                     // 拼接文件路径
                     String mapFilePath = "parkinglotMap/" + selectedMap;
-                    char[][] parkingLotArray = readParkingLotArrayFromFile(mapFilePath);
+                    parkingLotArray = readParkingLotArrayFromFile(mapFilePath);
                     parkingLotPanel = updateParkingLotPanel(parkingLotArray);
                     mainPanel.add(parkingLotPanel, BorderLayout.CENTER); // 添加更新后的停车场面板
                     mainPanel.revalidate(); // 重新布局并绘制面板
@@ -109,7 +106,7 @@ public class ParkingLotGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // 获取用户输入的车位号
                 String spaceNumber = spaceNumberField.getText().trim();
-                // TODO: 查找路径并显示
+//                GraphUtils.DijkstraPath(parkingLotArray,"0-0",spaceNumber);
                 // 例如：
                 int row = 2;
                 int col = 3;
@@ -153,6 +150,12 @@ public class ParkingLotGUI extends JFrame {
                     case 'E':
                         label = createLabel("/car_green.png", Color.WHITE);
                         parkingLotPanel.add(label);
+                        break;
+                    case 'P':
+                        label = new JLabel();
+                        label.setBackground(Color.GREEN);
+                        label.setOpaque(true);
+                        parkingLotPanel.add(label, BorderLayout.CENTER); // 添加到停车场面板的中央
                         break;
                     case 'S':
                         label = new JLabel("入口");
@@ -204,8 +207,5 @@ public class ParkingLotGUI extends JFrame {
     }
 
 
-    public static void main(String[] args) {
-        new ParkingLotGUI();
-    }
 
 }
