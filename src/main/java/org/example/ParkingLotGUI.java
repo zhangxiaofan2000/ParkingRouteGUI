@@ -1,5 +1,8 @@
 package org.example;
 
+import org.jgrapht.GraphPath;
+import org.jgrapht.graph.DefaultEdge;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
@@ -19,8 +22,6 @@ public class ParkingLotGUI extends JFrame {
 
     private static final int SPACE_WIDTH=50; // 停车位宽度
     private static final int SPACE_HEIGHT=50; // 停车位高度
-
-
     private char[][] parkingLotArray;
     private JPanel parkingLotPanel; // 停车场图像面板
     private JLabel[][] spaceLabels; // 停车位标签
@@ -68,12 +69,14 @@ public class ParkingLotGUI extends JFrame {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     mainPanel.remove(parkingLotPanel); // 移除原有的停车场面板
+
                     // 获取选择的地图文件名
                     String selectedMap = (String) e.getItem();
                     // 拼接文件路径
                     String mapFilePath = "parkinglotMap/" + selectedMap;
                     parkingLotArray = readParkingLotArrayFromFile(mapFilePath);
                     parkingLotPanel = updateParkingLotPanel(parkingLotArray);
+
                     mainPanel.add(parkingLotPanel, BorderLayout.CENTER); // 添加更新后的停车场面板
                     mainPanel.revalidate(); // 重新布局并绘制面板
                     mainPanel.repaint();
@@ -104,16 +107,46 @@ public class ParkingLotGUI extends JFrame {
         // 添加查找路径按钮的动作监听器
         findPathButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
+                String startNode = "";
+                for (int i = 0; i < parkingLotArray.length; i++) {
+                    for (int j = 0; j < parkingLotArray[0].length; j++) {
+                        if (parkingLotArray[i][j] == 'S') {
+                            startNode = i + "-" + j;
+                            break;
+                        }
+                    }
+                }
+
                 // 获取用户输入的车位号
                 String spaceNumber = spaceNumberField.getText().trim();
-//                GraphUtils.DijkstraPath(parkingLotArray,"0-0",spaceNumber);
-                // 例如：
-                int row = 2;
-                int col = 3;
-                JLabel spaceLabel = spaceLabels[row][col];
-                spaceLabel.setBackground(Color.RED);
+                GraphPath<String, DefaultEdge> shortestPath =   GraphUtils.DijkstraPath(parkingLotArray,startNode,spaceNumber);
+                char[][] newParkingLotArray = parkingLotArray.clone();
+                for (int i = 0; i < parkingLotArray.length; i++) {
+                    newParkingLotArray[i] = parkingLotArray[i].clone();
+                }
+
+                for (String vertex : shortestPath.getVertexList()) {
+                    String[] parts = vertex.split("-");
+                    int num1 = Integer.parseInt(parts[0]);
+                    int num2 = Integer.parseInt(parts[1]);
+                    newParkingLotArray[num1][num2] = 'P';
+
+                }
+                mainPanel.remove(parkingLotPanel); // 移除原有的停车场面板
+
+                parkingLotPanel = updateParkingLotPanel(newParkingLotArray);
+
+                mainPanel.add(parkingLotPanel, BorderLayout.CENTER); // 添加更新后的停车场面板
+                mainPanel.revalidate(); // 重新布局并绘制面板
+                mainPanel.repaint();
+
             }
         });
+
+
+
+
 
 
         // 将组件添加到主面板

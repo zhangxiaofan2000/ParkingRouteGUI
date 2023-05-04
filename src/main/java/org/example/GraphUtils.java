@@ -51,16 +51,16 @@ public class GraphUtils {
                     }
                 }
                 if (array[i][j] == 'E' | array[i][j] == 'C') {
-                    if (i > 0 & (array[i - 1][j] != 'C' | array[i - 1][j] != 'E')) {
+                    if (i > 0 & (array[i - 1][j] != 'C' & array[i - 1][j] != 'E')) {
                         graph.addEdge(nodeName, (i - 1) + "-" + j);
                     }
-                    if (j > 0 & (array[i][j - 1] != 'C' | array[i][j - 1] != 'E')) {
+                    if (j > 0 & (array[i][j - 1] != 'C' & array[i][j - 1] != 'E')) {
                         graph.addEdge(nodeName, i + "-" + (j - 1));
                     }
-                    if (i < array.length - 1 & (array[i + 1][j] != 'C' | array[i + 1][j] != 'E')) {
+                    if (i < array.length - 1 & (array[i + 1][j] != 'C' & array[i + 1][j] != 'E')) {
                         graph.addEdge(nodeName, (i + 1) + "-" + j);
                     }
-                    if (j < array[0].length - 1 & (array[i][j + 1] != 'C' | array[i][j + 1] != 'E')) {
+                    if (j < array[0].length - 1 & (array[i][j + 1] != 'C' & array[i][j + 1] != 'E')) {
                         graph.addEdge(nodeName, i + "-" + (j + 1));
                     }
                 }
