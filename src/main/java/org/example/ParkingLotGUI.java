@@ -26,12 +26,14 @@ public class ParkingLotGUI extends JFrame {
 
     private JPanel parkingLotPanel; // 停车场图像面板
     private JLabel infoLabel; // 停车场信息
-
+    private String spaceNumber;
     private JLabel[][] spaceLabels; // 停车位标签
     private JPanel buttonPanel; // 按钮面板
     private JLabel spaceNumberLabel; // 车位号标签
+    private JLabel spaceNumberLabel2; // 车位号标签
     private JTextField spaceNumberField; // 车位号输入框
     private JButton findPathButton; // 查找路径按钮
+    private JButton findPath2Button; // 查找路径按钮
 
     public ParkingLotGUI() {
         super("Parking Lot");
@@ -98,18 +100,25 @@ public class ParkingLotGUI extends JFrame {
         JPanel mapPanel = new JPanel(new BorderLayout());
         mapPanel.add(mapComboBox, BorderLayout.CENTER);
         selectPanel.add(mapPanel);
-
+        spaceNumberLabel2 = new JLabel("车位:");
         infoLabel = new JLabel("点击车位查看信息", JLabel.CENTER);
         // 设置JFrame的布局为BorderLayout
         setLayout(new BorderLayout());
+        findPath2Button = new JButton("导航");
 
 
         Box box = Box.createHorizontalBox();
         box.add(selectPanel);
         box.add(Box.createHorizontalStrut(10)); // 加一个水平间距
+        box.add(spaceNumberLabel2); // 加一个水平间距
         box.add(infoLabel);
+        box.add(findPath2Button);
         mainPanel.add(box, BorderLayout.NORTH);
 
+
+        // 创建算法选择器并添加选项
+        String[] algorithmOptions = {"Dijkstra", "A*"};
+        JComboBox<String> algorithmSelector = new JComboBox<>(algorithmOptions);
 
         // 创建按钮面板
         buttonPanel = new JPanel();
@@ -132,8 +141,72 @@ public class ParkingLotGUI extends JFrame {
                 }
 
                 // 获取用户输入的车位号
-                String spaceNumber = spaceNumberField.getText().trim();
-                GraphPath<String, DefaultEdge> shortestPath =   GraphUtils.DijkstraPath(parkingLotArray,startNode,spaceNumber);
+                spaceNumber = spaceNumberField.getText().trim();
+                // 获取选择器的选项
+                String selectedAlgorithm = (String) algorithmSelector.getSelectedItem();
+                GraphPath<String, DefaultEdge> shortestPath = null;
+                // 根据选项调用不同的算法
+                if (selectedAlgorithm.equals("Dijkstra")) {
+                    shortestPath =   GraphUtils.DijkstraPath(parkingLotArray,startNode,spaceNumber);
+
+                } else if (selectedAlgorithm.equals("A*")) {
+                    shortestPath = GraphUtils.AStarPath(parkingLotArray, startNode, spaceNumber);
+
+                }
+
+
+                char[][] newParkingLotArray = parkingLotArray.clone();
+                for (int i = 0; i < parkingLotArray.length; i++) {
+                    newParkingLotArray[i] = parkingLotArray[i].clone();
+                }
+
+                for (String vertex : shortestPath.getVertexList()) {
+                    String[] parts = vertex.split("-");
+                    int num1 = Integer.parseInt(parts[0]);
+                    int num2 = Integer.parseInt(parts[1]);
+                    newParkingLotArray[num1][num2] = 'P';
+
+                }
+                mainPanel.remove(parkingLotPanel); // 移除原有的停车场面板
+
+                parkingLotPanel = updateParkingLotPanel(newParkingLotArray);
+
+                mainPanel.add(parkingLotPanel, BorderLayout.CENTER); // 添加更新后的停车场面板
+                mainPanel.revalidate(); // 重新布局并绘制面板
+                mainPanel.repaint();
+
+            }
+        });
+
+
+        findPath2Button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                String startNode = "";
+                for (int i = 0; i < parkingLotArray.length; i++) {
+                    for (int j = 0; j < parkingLotArray[0].length; j++) {
+                        if (parkingLotArray[i][j] == 'S') {
+                            startNode = i + "-" + j;
+                            break;
+                        }
+                    }
+                }
+
+                // 获取用户输入的车位号
+                spaceNumber = infoLabel.getText().trim();
+                // 获取选择器的选项
+                String selectedAlgorithm = (String) algorithmSelector.getSelectedItem();
+                GraphPath<String, DefaultEdge> shortestPath = null;
+                // 根据选项调用不同的算法
+                if (selectedAlgorithm.equals("Dijkstra")) {
+                    shortestPath =   GraphUtils.DijkstraPath(parkingLotArray,startNode,spaceNumber);
+
+                } else if (selectedAlgorithm.equals("A*")) {
+                    shortestPath = GraphUtils.AStarPath(parkingLotArray, startNode, spaceNumber);
+
+                }
+
+
                 char[][] newParkingLotArray = parkingLotArray.clone();
                 for (int i = 0; i < parkingLotArray.length; i++) {
                     newParkingLotArray[i] = parkingLotArray[i].clone();
@@ -160,12 +233,11 @@ public class ParkingLotGUI extends JFrame {
 
 
 
-
-
         // 将组件添加到主面板
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
         mainPanel.add(parkingLotPanel, BorderLayout.CENTER);
-
+        // 将选择器和查找路径按钮添加到按钮面板
+        buttonPanel.add(algorithmSelector);
         buttonPanel.add(spaceNumberLabel);
         buttonPanel.add(spaceNumberField);
         buttonPanel.add(findPathButton);
@@ -240,7 +312,7 @@ public class ParkingLotGUI extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 当鼠标点击JLabel时，将其文本设置为信息显示区域JLabel的文本
-                infoLabel.setText("车位号："+String.valueOf(i)+"-"+ j+"    ");
+                infoLabel.setText(String.valueOf(i)+"-"+ j+"    ");
             }
         };
 
